@@ -69,7 +69,7 @@ class Invoker implements InvokerInterface
 
         // Check all parameters are resolved
         $diff = array_diff_key($callableReflection->getParameters(), $args);
-        if (! empty($diff)) {
+        if (! empty($diff) && !$this->unresolvedIsVariadic($diff)) {
             /** @var \ReflectionParameter $parameter */
             $parameter = reset($diff);
             throw new NotEnoughParametersException(sprintf(
@@ -118,5 +118,28 @@ class Invoker implements InvokerInterface
     public function getCallableResolver()
     {
         return $this->callableResolver;
+    }
+
+
+    /**
+     * @param  \ReflectionParameter[] $diff
+     * @return bool
+     */
+    private function unresolvedIsVariadic($diff)
+    {
+        if (count($diff) != 1) {
+            // Only one variadic is allowed
+            return false;
+        }
+
+        if (version_compare(PHP_VERSION, '5.6.0') < 0) {
+            // variadic is PHP 5.6+
+            return false;
+        }
+
+        /** @var \ReflectionParameter $parameter */
+        $parameter = reset($diff);
+
+        return $parameter->isVariadic();
     }
 }

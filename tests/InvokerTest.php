@@ -75,6 +75,30 @@ class InvokerTest extends TestCase
     /**
      * @test
      */
+    public function should_invoke_method_with_all_variadic()
+    {
+        $fixture = new InvokerTestFixture;
+
+        $this->invoker->call(array($fixture, 'allVariadic'), [1,2,3]);
+
+        $this->assertEquals(3, $fixture->variadicCount);
+    }
+
+    /**
+     * @test
+     */
+    public function should_invoke_method_with_variadic_suffix()
+    {
+        $fixture = new InvokerTestFixture;
+
+        $this->invoker->call(array($fixture, 'variadicSuffix'), [1,2,3]);
+
+        $this->assertEquals(1, $fixture->variadicCount);
+    }
+
+    /**
+     * @test
+     */
     public function should_invoke_static_method()
     {
         $result = $this->invoker->call(array('Invoker\Test\InvokerTestStaticFixture', 'foo'));
@@ -392,11 +416,26 @@ class InvokerTest extends TestCase
 
 class InvokerTestFixture
 {
+    public $variadicCount = null;
     public $wasCalled = false;
     public function foo()
     {
         // Use this to make sure we are not called from a static context
         $this->wasCalled = true;
+        return 'bar';
+    }
+
+    public function variadicSuffix($one, $two, ...$variadic)
+    {
+        // Use this to make sure we are not called from a static context
+        $this->variadicCount = count($variadic);
+        return 'bar';
+    }
+
+    public function allVariadic(...$variadic)
+    {
+        // Use this to make sure we are not called from a static context
+        $this->variadicCount = count($variadic);
         return 'bar';
     }
 }
